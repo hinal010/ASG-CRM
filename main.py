@@ -8,7 +8,7 @@ import crud
 import schemas
 
 from auth import verify_password
-
+from fastapi.security import OAuth2PasswordRequestForm
 from database import Base
 from database import engine
 from database import get_db
@@ -74,27 +74,25 @@ def signup(
     response_model=schemas.Token
 )
 def login(
-    user: schemas.UserLogin,
+    form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
 
     db_user = crud.get_user_by_email(
         db,
-        user.email
+        form_data.username
     )
 
     if not db_user:
-
         raise HTTPException(
             status_code=401,
             detail="Invalid Email"
         )
 
     if not verify_password(
-        user.password,
+        form_data.password,
         db_user.password
     ):
-
         raise HTTPException(
             status_code=401,
             detail="Invalid Password"
