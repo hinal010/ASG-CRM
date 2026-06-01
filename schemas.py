@@ -49,3 +49,50 @@ class AreaResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class ClientCreate(BaseModel):
+
+    pharmacy_name: str
+    contact_person: str | None = None
+    mobile_no: str
+
+    email: EmailStr | None = None
+    lead_source: str | None = None
+    address: str | None = None
+
+    city_id: int
+    area_id: int
+
+class ClientUpdate(BaseModel):
+
+    pharmacy_name: str
+    contact_person: str | None = None
+    mobile_no: str
+
+    email: EmailStr | None = None
+    lead_source: str | None = None
+    address: str | None = None
+
+    city_id: int
+    area_id: int
+
+class ClientResponse(BaseModel):
+
+    id: int
+
+    pharmacy_name: str
+    contact_person: str | None
+
+    mobile_no: str
+
+    email: EmailStr | None
+    lead_source: str | None
+    address: str | None
+
+    city_id: int
+    area_id: int
+
+    created_by: int
+
+    class Config:
+        from_attributes = True

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 import crud
 import schemas
-from models import City, Area
+from models import City, Area,Client,User
 
 from auth import verify_password
 from fastapi.security import OAuth2PasswordRequestForm
@@ -198,4 +198,120 @@ def get_areas(
     return crud.get_areas_by_city(
         db,
         city_id
+    )
+
+@app.post(
+    "/clients",
+    response_model=schemas.ClientResponse
+)
+def create_client(
+    client: schemas.ClientCreate,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+
+    return crud.create_client(
+        db,
+        client,
+        current_user.id
+    )
+
+@app.get(
+    "/clients",
+    response_model=list[schemas.ClientResponse]
+)
+def get_clients(
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+
+    return crud.get_clients(db)
+
+@app.get(
+    "/clients/{client_id}",
+    response_model=schemas.ClientResponse
+)
+def get_client(
+    client_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+
+    client = crud.get_client(
+        db,
+        client_id
+    )
+
+    if not client:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Client not found"
+        )
+
+    return client
+
+@app.put(
+    "/clients/{client_id}",
+    response_model=schemas.ClientResponse
+)
+def update_client(
+    client_id: int,
+    data: schemas.ClientUpdate,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+
+    client = crud.update_client(
+        db,
+        client_id,
+        data
+    )
+
+    if not client:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Client not found"
+        )
+
+    return client
+
+@app.delete(
+    "/clients/{client_id}"
+)
+def delete_client(
+    client_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+
+    deleted = crud.delete_client(
+        db,
+        client_id
+    )
+
+    if not deleted:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Client not found"
+        )
+
+    return {
+        "message": "Client deleted successfully"
+    }
+
+@app.get(
+    "/clients/search/"
+)
+def search_clients(
+    q: str,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+
+    return crud.search_clients(
+        db,
+        q
     )

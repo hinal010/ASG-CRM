@@ -35,6 +35,10 @@ class User(Base):
         nullable=False,
         default="user"
     )
+    clients = relationship(
+    "Client",
+    back_populates="creator"
+)
 
 class City(Base):
 
@@ -88,4 +92,71 @@ class Area(Base):
     city = relationship(
         "City",
         back_populates="areas"
+    )
+
+class Client(Base):
+
+    __tablename__ = "clients"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+
+    pharmacy_name = Column(
+        String,
+        nullable=False
+    )
+
+    contact_person = Column(
+        String
+    )
+
+    mobile_no = Column(
+        String(10),
+        nullable=False
+    )
+
+    email = Column(
+        String
+    )
+
+    lead_source = Column(
+        String
+    )
+
+    address = Column(
+        String
+    )
+
+    city_id = Column(
+        Integer,
+        ForeignKey("cities.id"),
+        nullable=False
+    )
+
+    area_id = Column(
+        Integer,
+        ForeignKey("areas.id"),
+        nullable=False
+    )
+
+    created_by = Column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=False
+    )
+
+    creator = relationship(
+        "User",
+        back_populates="clients"
+    )
+
+    city = relationship(
+        "City"
+    )
+
+    area = relationship(
+        "Area"
     )

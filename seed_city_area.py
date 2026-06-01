@@ -30,8 +30,6 @@ for _, row in df.iterrows():
         db.add(city)
 
         db.commit()
-        
-        db.close()
 
         db.refresh(city)
 
@@ -52,5 +50,6 @@ for _, row in df.iterrows():
         )
 
 db.commit()
+db.close()
 
 print("Cities and Areas Imported Successfully")
