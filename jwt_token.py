@@ -5,7 +5,9 @@ from datetime import timedelta
 
 from jose import JWTError
 from jose import jwt
-
+from sqlalchemy.orm import Session
+from database import get_db
+from models import User
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
@@ -61,7 +63,41 @@ def verify_token(token: str):
 
         return None
     
-def get_current_user(token: str = Depends(oauth2_scheme)):
+# def get_current_user(token: str = Depends(oauth2_scheme)):
+
+#     try:
+
+#         payload = jwt.decode(
+#             token,
+#             SECRET_KEY,
+#             algorithms=[ALGORITHM]
+#         )
+
+#         email = payload.get("sub")
+
+#         role = payload.get("role")
+
+#         if email is None:
+#             raise HTTPException(
+#                 status_code=401,
+#                 detail="Invalid token"
+#             )
+
+#         return {
+#             "email": email,
+#             "role": role
+#         }
+
+#     except JWTError:
+
+#         raise HTTPException(
+#             status_code=401,
+#             detail="Invalid token"
+#         )
+def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+):
 
     try:
 
@@ -73,18 +109,27 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 
         email = payload.get("sub")
 
-        role = payload.get("role")
-
         if email is None:
+
             raise HTTPException(
                 status_code=401,
                 detail="Invalid token"
             )
 
-        return {
-            "email": email,
-            "role": role
-        }
+        user = db.query(
+            User
+        ).filter(
+            User.email == email
+        ).first()
+
+        if not user:
+
+            raise HTTPException(
+                status_code=401,
+                detail="User not found"
+            )
+
+        return user
 
     except JWTError:
 
@@ -97,7 +142,7 @@ def admin_required(
     current_user=Depends(get_current_user)
 ):
 
-    if current_user["role"] != "admin":
+    if current_user.role != "admin":
 
         raise HTTPException(
             status_code=403,

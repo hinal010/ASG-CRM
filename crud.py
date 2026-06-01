@@ -41,8 +41,8 @@ def create_user(
 
     return db_user
 
-def get_user_by_email(db: Session, email: str):
-    return db.query(User).filter(User.email == email).first()
+# def get_user_by_email(db: Session, email: str):
+#     return db.query(User).filter(User.email == email).first()
 
 
 def create_user(db: Session, user: UserCreate):
