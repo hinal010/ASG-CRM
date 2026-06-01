@@ -32,3 +32,20 @@ class Token(BaseModel):
 
     access_token: str
     token_type: str
+
+class CityResponse(BaseModel):
+
+    id: int
+    name: str
+
+    class Config:
+        from_attributes = True
+
+class AreaResponse(BaseModel):
+
+    id: int
+    name: str
+    city_id: int
+
+    class Config:
+        from_attributes = True

@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 import crud
 import schemas
+from models import City, Area
 
 from auth import verify_password
 from fastapi.security import OAuth2PasswordRequestForm
@@ -174,3 +175,27 @@ def get_me(
 ):
 
     return current_user
+
+@app.get(
+    "/cities",
+    response_model=list[schemas.CityResponse]
+)
+def get_cities(
+    db: Session = Depends(get_db)
+):
+
+    return crud.get_cities(db)
+
+@app.get(
+    "/cities/{city_id}/areas",
+    response_model=list[schemas.AreaResponse]
+)
+def get_areas(
+    city_id: int,
+    db: Session = Depends(get_db)
+):
+
+    return crud.get_areas_by_city(
+        db,
+        city_id
+    )

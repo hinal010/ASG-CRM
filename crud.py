@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from models import User
+from models import User, City, Area
 
 from schemas import UserCreate
 
@@ -68,3 +68,25 @@ def get_users(db: Session):
 
 def get_user_by_id(db: Session, user_id: int):
     return db.query(User).filter(User.id == user_id).first()
+
+def get_cities(db):
+
+    return db.query(
+        City
+    ).order_by(
+        City.name
+    ).all()
+
+
+def get_areas_by_city(
+    db,
+    city_id: int
+):
+
+    return db.query(
+        Area
+    ).filter(
+        Area.city_id == city_id
+    ).order_by(
+        Area.name
+    ).all()
