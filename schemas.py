@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from pydantic import EmailStr
+from pydantic import EmailStr,Field
 
 
 class UserCreate(BaseModel):
@@ -54,7 +54,10 @@ class ClientCreate(BaseModel):
 
     pharmacy_name: str
     contact_person: str | None = None
-    mobile_no: str
+    mobile_no: str = Field(
+    min_length=10,
+    max_length=10
+)
 
     email: EmailStr | None = None
     lead_source: str | None = None
@@ -65,16 +68,20 @@ class ClientCreate(BaseModel):
 
 class ClientUpdate(BaseModel):
 
-    pharmacy_name: str
+    pharmacy_name: str | None = None
     contact_person: str | None = None
-    mobile_no: str
+    mobile_no: str | None = Field(
+        default=None,
+        min_length=10,
+        max_length=10
+    )
 
     email: EmailStr | None = None
     lead_source: str | None = None
     address: str | None = None
 
-    city_id: int
-    area_id: int
+    city_id: int | None = None
+    area_id: int | None = None
 
 class ClientResponse(BaseModel):
 
@@ -91,6 +98,10 @@ class ClientResponse(BaseModel):
 
     city_id: int
     area_id: int
+    
+    city_name: str
+    area_name: str
+
 
     created_by: int
 
