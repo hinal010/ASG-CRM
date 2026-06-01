@@ -98,9 +98,9 @@ class ClientResponse(BaseModel):
 
     city_id: int
     area_id: int
-    
-    city_name: str
-    area_name: str
+
+    # city_name: str
+    # area_name: str
 
 
     created_by: int

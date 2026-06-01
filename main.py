@@ -303,7 +303,7 @@ def delete_client(
     }
 
 @app.get(
-    "/clients/search/"
+    "/clients/search"
 )
 def search_clients(
     q: str,
