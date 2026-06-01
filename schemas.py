@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from pydantic import EmailStr,Field
+from datetime import date ,time
 
 
 class UserCreate(BaseModel):
@@ -121,6 +122,52 @@ class ExistingProductResponse(BaseModel):
     id: int
 
     product_name: str
+
+    class Config:
+
+        from_attributes = True
+
+class CallLogCreate(BaseModel):
+
+    client_id: int
+
+    existing_product_id: int | None = None
+
+    lead_status: str
+
+    remarks: str | None = None
+
+    follow_up_date: date | None = None
+
+class CallLogUpdate(BaseModel):
+
+    client_id: int | None = None
+
+    existing_product_id: int | None = None
+
+    lead_status: str | None = None
+
+    remarks: str | None = None
+
+    follow_up_date: date | None = None
+
+class CallLogResponse(BaseModel):
+
+    id: int
+
+    client_id: int
+
+    existing_product_id: int | None
+
+    lead_status: str
+
+    remarks: str | None
+
+    follow_up_date: date | None
+
+    created_date: date
+
+    created_time: time
 
     class Config:
 

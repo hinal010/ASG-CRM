@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Date,Time
 from sqlalchemy.orm import relationship
 from database import Base
 from sqlalchemy import UniqueConstraint
+from datetime import datetime
 
 
 class User(Base):
@@ -160,6 +161,12 @@ class Client(Base):
     area = relationship(
         "Area"
     )
+    
+    call_logs = relationship(
+    "CallLog",
+    back_populates="client"
+)
+
 
 class ExistingProduct(Base):
 
@@ -175,4 +182,53 @@ class ExistingProduct(Base):
         String,
         unique=True,
         nullable=False
+    )
+
+class CallLog(Base):
+
+    __tablename__ = "call_logs"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+
+    client_id = Column(
+        Integer,
+        ForeignKey("clients.id")
+    )
+
+    existing_product_id = Column(
+        Integer,
+        ForeignKey("existing_products.id"),
+        nullable=True
+    )
+
+    lead_status = Column(
+        String,
+        nullable=False
+    )
+
+    remarks = Column(String)
+
+    follow_up_date = Column(Date)
+
+    created_date = Column(
+        Date,
+        default=lambda: datetime.now().date()
+    )
+
+    created_time = Column(
+        Time,
+        default=lambda: datetime.now().time()
+    )
+
+    existing_product = relationship(
+        "ExistingProduct"
+    )
+
+    client = relationship(
+        "Client",
+        back_populates="call_logs"
     )

@@ -1,10 +1,11 @@
 from sqlalchemy.orm import Session
 
-from models import User, City, Area,Client,ExistingProduct
+from models import User, City, Area,Client,ExistingProduct,CallLog
 
 from schemas import UserCreate
 
 from auth import hash_password
+from fastapi import HTTPException
 
 
 def get_user_by_email(
@@ -288,4 +289,165 @@ def search_existing_products(
         ExistingProduct.product_name.ilike(
             f"%{q}%"
         )
+    ).all()
+
+def create_call_log(
+    db,
+    data
+):
+
+    client = db.query(
+        Client
+    ).filter(
+        Client.id == data.client_id
+    ).first()
+
+    if not client:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Client not found"
+        )
+
+    if data.existing_product_id:
+
+        product = db.query(
+            ExistingProduct
+        ).filter(
+            ExistingProduct.id == data.existing_product_id
+        ).first()
+
+        if not product:
+
+            raise HTTPException(
+                status_code=404,
+                detail="Existing Product not found"
+            )
+
+    call_log = CallLog(
+        **data.model_dump()
+    )
+
+    db.add(call_log)
+
+    db.commit()
+
+    db.refresh(call_log)
+
+    return call_log
+def get_call_logs(
+    db
+):
+
+    return db.query(
+        CallLog
+    ).all()
+
+def get_call_log(
+    db,
+    call_log_id
+):
+
+    return db.query(
+        CallLog
+    ).filter(
+        CallLog.id == call_log_id
+    ).first()
+
+def update_call_log(
+    db,
+    call_log_id,
+    data
+):
+
+    call_log = db.query(
+        CallLog
+    ).filter(
+        CallLog.id == call_log_id
+    ).first()
+
+    if not call_log:
+        return None
+    
+    if "client_id" in update_data:
+
+        client = db.query(
+            Client
+        ).filter(
+            Client.id == update_data["client_id"]
+        ).first()
+
+        if not client:
+
+            raise HTTPException(
+                status_code=404,
+                detail="Client not found"
+            )
+        
+    if ("existing_product_id" in update_data 
+        and update_data["existing_product_id"] is not None
+):
+
+        product = db.query(
+            ExistingProduct
+        ).filter(
+            ExistingProduct.id == update_data["existing_product_id"]
+        ).first()
+
+        if not product:
+
+            raise HTTPException(
+                status_code=404,
+                detail="Existing Product not found"
+            )
+
+    update_data = data.model_dump(
+        exclude_unset=True
+    )
+
+    for key, value in update_data.items():
+
+        setattr(
+            call_log,
+            key,
+            value
+        )
+
+    db.commit()
+
+    db.refresh(call_log)
+
+    return call_log
+
+def delete_call_log(
+    db,
+    call_log_id
+):
+
+    call_log = db.query(
+        CallLog
+    ).filter(
+        CallLog.id == call_log_id
+    ).first()
+
+    if not call_log:
+        return None
+
+    db.delete(call_log)
+
+    db.commit()
+
+    return True
+
+# Search by remarks or lead status:
+def search_call_logs(
+    db,
+    q
+):
+
+    return db.query(
+        CallLog
+    ).filter(
+        (CallLog.lead_status.ilike(f"%{q}%")) |
+        (CallLog.remarks.ilike(f"%{q}%"))
     ).all()

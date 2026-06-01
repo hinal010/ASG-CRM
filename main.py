@@ -433,3 +433,108 @@ def delete_existing_product(
     return {
         "message": "Product deleted successfully"
     }
+
+@app.post(
+    "/call-logs",
+    response_model=schemas.CallLogResponse
+)
+def create_call_log(
+    data: schemas.CallLogCreate,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+
+    return crud.create_call_log(
+        db,
+        data
+    )
+
+@app.get(
+    "/call-logs/search",
+    response_model=list[schemas.CallLogResponse]
+)
+def search_call_logs(
+    q: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+
+    return crud.search_call_logs(
+        db,
+        q
+    )
+
+@app.get(
+    "/call-logs/{call_log_id}",
+    response_model=schemas.CallLogResponse
+)
+def get_call_log(
+    call_log_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+
+    call_log = crud.get_call_log(
+        db,
+        call_log_id
+    )
+
+    if not call_log:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Call Log not found"
+        )
+
+    return call_log
+
+@app.put(
+    "/call-logs/{call_log_id}",
+    response_model=schemas.CallLogResponse
+)
+def update_call_log(
+    call_log_id: int,
+    data: schemas.CallLogUpdate,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+
+    call_log = crud.update_call_log(
+        db,
+        call_log_id,
+        data
+    )
+
+    if not call_log:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Call Log not found"
+        )
+
+    return call_log
+
+@app.delete(
+    "/call-logs/{call_log_id}"
+)
+def delete_call_log(
+    call_log_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+
+    call_log = crud.delete_call_log(
+        db,
+        call_log_id
+    )
+
+    if not call_log:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Call Log not found"
+        )
+
+    return {
+        "message": "Call Log deleted successfully"
+    }
