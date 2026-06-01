@@ -227,30 +227,6 @@ def get_clients(
 
     return crud.get_clients(db)
 
-@app.get(
-    "/clients/{client_id}",
-    response_model=schemas.ClientResponse
-)
-def get_client(
-    client_id: int,
-    db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
-):
-
-    client = crud.get_client(
-        db,
-        client_id
-    )
-
-    if not client:
-
-        raise HTTPException(
-            status_code=404,
-            detail="Client not found"
-        )
-
-    return client
-
 @app.put(
     "/clients/{client_id}",
     response_model=schemas.ClientResponse
@@ -315,3 +291,145 @@ def search_clients(
         db,
         q
     )
+
+@app.get(
+    "/clients/{client_id}",
+    response_model=schemas.ClientResponse
+)
+def get_client(
+    client_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+
+    client = crud.get_client(
+        db,
+        client_id
+    )
+
+    if not client:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Client not found"
+        )
+
+    return client
+
+@app.post(
+    "/existing-products",
+    response_model=schemas.ExistingProductResponse
+)
+def create_existing_product(
+    data: schemas.ExistingProductCreate,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+
+    return crud.create_existing_product(
+        db,
+        data
+    )
+
+@app.get(
+    "/existing-products",
+    response_model=list[schemas.ExistingProductResponse]
+)
+def get_existing_products(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+
+    return crud.get_existing_products(
+        db
+    )
+
+@app.get(
+    "/existing-products/search",
+    response_model=list[schemas.ExistingProductResponse]
+)
+def search_existing_products(
+    q: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+
+    return crud.search_existing_products(
+        db,
+        q
+    )
+
+@app.get(
+    "/existing-products/{product_id}",
+    response_model=schemas.ExistingProductResponse
+)
+def get_existing_product(
+    product_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+
+    product = crud.get_existing_product(
+        db,
+        product_id
+    )
+
+    if not product:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Product not found"
+        )
+
+    return product
+
+@app.put(
+    "/existing-products/{product_id}",
+    response_model=schemas.ExistingProductResponse
+)
+def update_existing_product(
+    product_id: int,
+    data: schemas.ExistingProductUpdate,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+
+    product = crud.update_existing_product(
+        db,
+        product_id,
+        data
+    )
+
+    if not product:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Product not found"
+        )
+
+    return product
+
+@app.delete(
+    "/existing-products/{product_id}"
+)
+def delete_existing_product(
+    product_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+
+    product = crud.delete_existing_product(
+        db,
+        product_id
+    )
+
+    if not product:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Product not found"
+        )
+
+    return {
+        "message": "Product deleted successfully"
+    }

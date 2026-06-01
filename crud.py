@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from models import User, City, Area,Client
+from models import User, City, Area,Client,ExistingProduct
 
 from schemas import UserCreate
 
@@ -185,5 +185,107 @@ def search_clients(
     ).filter(
         Client.pharmacy_name.ilike(
             f"%{query}%"
+        )
+    ).all()
+
+def create_existing_product(
+    db,
+    data
+):
+
+    product = ExistingProduct(
+        **data.model_dump()
+    )
+
+    db.add(product)
+
+    db.commit()
+
+    db.refresh(product)
+
+    return product
+
+def get_existing_products(
+    db
+):
+
+    return db.query(
+        ExistingProduct
+    ).all()
+
+def get_existing_product(
+    db,
+    product_id
+):
+
+    return db.query(
+        ExistingProduct
+    ).filter(
+        ExistingProduct.id == product_id
+    ).first()
+
+def update_existing_product(
+    db,
+    product_id,
+    data
+):
+
+    product = db.query(
+        ExistingProduct
+    ).filter(
+        ExistingProduct.id == product_id
+    ).first()
+
+    if not product:
+        return None
+
+    update_data = data.model_dump(
+        exclude_unset=True
+    )
+
+    for key, value in update_data.items():
+
+        setattr(
+            product,
+            key,
+            value
+        )
+
+    db.commit()
+
+    db.refresh(product)
+
+    return product
+
+def delete_existing_product(
+    db,
+    product_id
+):
+
+    product = db.query(
+        ExistingProduct
+    ).filter(
+        ExistingProduct.id == product_id
+    ).first()
+
+    if not product:
+        return None
+
+    db.delete(product)
+
+    db.commit()
+
+    return True
+
+def search_existing_products(
+    db,
+    q
+):
+
+    return db.query(
+        ExistingProduct
+    ).filter(
+        ExistingProduct.product_name.ilike(
+            f"%{q}%"
         )
     ).all()

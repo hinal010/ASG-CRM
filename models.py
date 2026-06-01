@@ -160,3 +160,19 @@ class Client(Base):
     area = relationship(
         "Area"
     )
+
+class ExistingProduct(Base):
+
+    __tablename__ = "existing_products"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+
+    product_name = Column(
+        String,
+        unique=True,
+        nullable=False
+    )

@@ -107,3 +107,21 @@ class ClientResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class ExistingProductCreate(BaseModel):
+
+    product_name: str
+
+class ExistingProductUpdate(BaseModel):
+
+    product_name: str | None = None
+
+class ExistingProductResponse(BaseModel):
+
+    id: int
+
+    product_name: str
+
+    class Config:
+
+        from_attributes = True
