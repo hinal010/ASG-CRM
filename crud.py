@@ -1,3 +1,5 @@
+from http import client
+
 from sqlalchemy.orm import Session
 
 from models import User, City, Area,Client,ExistingProduct,CallLog,Demo
@@ -8,6 +10,7 @@ from auth import hash_password
 from fastapi import HTTPException
 from datetime import timedelta
 from datetime import date
+from urllib.parse import quote
 
 
 def get_user_by_email(
@@ -472,6 +475,14 @@ def create_demo(
             status_code=404,
             detail="Client not found"
         )
+    map_url = None
+
+    if client.address:
+
+        map_url = (
+            "https://www.google.com/maps/search/?api=1&query="
+            + quote(client.address)
+        )
 
     employee = db.query(
         User
@@ -496,12 +507,10 @@ def create_demo(
         )
 
     demo = Demo(
-
-        **data.model_dump(),
-
-        trial_expiry_date=trial_expiry_date,
-
-        trial_status="active"
+    **data.model_dump(),
+    demo_location=map_url,
+    trial_expiry_date=trial_expiry_date,
+    trial_status="active"
     )
 
     db.add(demo)
@@ -564,6 +573,13 @@ def update_demo(
                 status_code=404,
                 detail="Client not found"
             )
+        
+        if client.address:
+
+            demo.demo_location = (
+                "https://www.google.com/maps/search/?api=1&query="
+                + quote(client.address)
+        )
 
     if (
         "assigned_employee_id" in update_data
