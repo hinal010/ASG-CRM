@@ -172,3 +172,91 @@ class CallLogResponse(BaseModel):
     class Config:
 
         from_attributes = True
+
+class DemoCreate(BaseModel):
+
+    client_id: int
+
+    assigned_employee_id: int
+
+    demo_date: date
+
+    demo_time: time
+
+    demo_feedback: str | None = None
+
+    meeting_notes: str | None = None
+
+    demo_status: str
+
+    demo_location: str | None = None
+
+    demo_installed: str = "No"
+
+    installation_date: date | None = None
+
+    trial_days: int = 10
+
+
+class DemoUpdate(BaseModel):
+
+    client_id: int | None = None
+
+    assigned_employee_id: int | None = None
+
+    demo_date: date | None = None
+
+    demo_time: time | None = None
+
+    demo_feedback: str | None = None
+
+    meeting_notes: str | None = None
+
+    demo_status: str | None = None
+
+    demo_location: str | None = None
+
+    demo_installed: str | None = None
+
+    installation_date: date | None = None
+
+    trial_days: int | None = None
+
+
+class DemoResponse(BaseModel):
+
+    id: int
+
+    client_id: int
+
+    assigned_employee_id: int
+
+    demo_date: date
+
+    demo_time: time
+
+    demo_feedback: str | None
+
+    meeting_notes: str | None
+
+    demo_status: str
+
+    demo_location: str | None
+
+    demo_installed: str
+
+    installation_date: date | None
+
+    trial_days: int
+
+    trial_expiry_date: date | None
+
+    trial_status: str
+
+    created_date: date
+
+    created_time: time
+
+    class Config:
+
+        from_attributes = True

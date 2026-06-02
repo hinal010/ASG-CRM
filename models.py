@@ -39,6 +39,11 @@ class User(Base):
     clients = relationship(
     "Client",
     back_populates="creator"
+    )
+
+    demos = relationship(
+    "Demo",
+    back_populates="assigned_employee"
 )
 
 class City(Base):
@@ -166,6 +171,10 @@ class Client(Base):
     "CallLog",
     back_populates="client"
 )
+    demos = relationship(
+    "Demo",
+    back_populates="client"
+)
 
 
 class ExistingProduct(Base):
@@ -232,3 +241,86 @@ class CallLog(Base):
         "Client",
         back_populates="call_logs"
     )
+
+
+class Demo(Base):
+
+    __tablename__ = "demos"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+
+    client_id = Column(
+        Integer,
+        ForeignKey("clients.id"),
+        nullable=False
+    )
+
+    assigned_employee_id = Column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=False
+    )
+
+    demo_date = Column(
+        Date,
+        nullable=False
+    )
+
+    demo_time = Column(
+        Time,
+        nullable=False
+    )
+
+    demo_feedback = Column(
+        String
+    )
+
+    meeting_notes = Column(
+        String
+    )
+
+    demo_status = Column(
+        String,
+        nullable=False
+    )
+
+    demo_location = Column(
+        String
+    )
+
+    demo_installed = Column(
+        String,
+        default="No"
+    )
+
+    installation_date = Column(
+        Date
+    )
+
+    trial_days = Column(
+        Integer,
+        default=10
+    )
+
+    trial_expiry_date = Column(
+        Date
+    )
+
+    trial_status = Column(
+        String,
+        default="active"
+    )
+
+    client = relationship(
+        "Client",
+        back_populates="demos"
+    )
+
+    assigned_employee = relationship(
+    "User",
+    back_populates="demos"
+)

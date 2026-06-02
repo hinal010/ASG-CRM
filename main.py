@@ -538,3 +538,137 @@ def delete_call_log(
     return {
         "message": "Call Log deleted successfully"
     }
+
+@app.post(
+    "/demos",
+    response_model=schemas.DemoResponse
+)
+def create_demo(
+    data: schemas.DemoCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        get_current_user
+    )
+):
+
+    return crud.create_demo(
+        db,
+        data
+    )
+
+@app.get(
+    "/demos",
+    response_model=list[
+        schemas.DemoResponse
+    ]
+)
+def get_demos(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        get_current_user
+    )
+):
+
+    crud.check_expired_trials(db)
+
+    return crud.get_demos(db)
+
+@app.get(
+    "/demos/search",
+    response_model=list[
+        schemas.DemoResponse
+    ]
+)
+def search_demos(
+    q: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        get_current_user
+    )
+):
+
+    return crud.search_demos(
+        db,
+        q
+    )
+
+@app.get(
+    "/demos/{demo_id}",
+    response_model=schemas.DemoResponse
+)
+def get_demo(
+    demo_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        get_current_user
+    )
+):
+
+    demo = crud.get_demo(
+        db,
+        demo_id
+    )
+
+    if not demo:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Demo not found"
+        )
+
+    return demo
+
+@app.put(
+    "/demos/{demo_id}",
+    response_model=schemas.DemoResponse
+)
+def update_demo(
+    demo_id: int,
+    data: schemas.DemoUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        get_current_user
+    )
+):
+
+    demo = crud.update_demo(
+        db,
+        demo_id,
+        data
+    )
+
+    if not demo:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Demo not found"
+        )
+
+    return demo
+
+@app.delete(
+    "/demos/{demo_id}"
+)
+def delete_demo(
+    demo_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        get_current_user
+    )
+):
+
+    demo = crud.delete_demo(
+        db,
+        demo_id
+    )
+
+    if not demo:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Demo not found"
+        )
+
+    return {
+        "message": "Demo deleted successfully"
+    }

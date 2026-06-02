@@ -1,11 +1,13 @@
 from sqlalchemy.orm import Session
 
-from models import User, City, Area,Client,ExistingProduct,CallLog
+from models import User, City, Area,Client,ExistingProduct,CallLog,Demo
 
 from schemas import UserCreate
 
 from auth import hash_password
 from fastapi import HTTPException
+from datetime import timedelta
+from datetime import date
 
 
 def get_user_by_email(
@@ -452,3 +454,208 @@ def search_call_logs(
         (CallLog.lead_status.ilike(f"%{q}%")) |
         (CallLog.remarks.ilike(f"%{q}%"))
     ).all()
+
+def create_demo(
+    db,
+    data
+):
+
+    client = db.query(
+        Client
+    ).filter(
+        Client.id == data.client_id
+    ).first()
+
+    if not client:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Client not found"
+        )
+
+    employee = db.query(
+        User
+    ).filter(
+        User.id == data.assigned_employee_id
+    ).first()
+
+    if not employee:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Employee not found"
+        )
+
+    trial_expiry_date = None
+
+    if data.installation_date:
+
+        trial_expiry_date = (
+            data.installation_date
+            + timedelta(days=data.trial_days)
+        )
+
+    demo = Demo(
+
+        **data.model_dump(),
+
+        trial_expiry_date=trial_expiry_date,
+
+        trial_status="active"
+    )
+
+    db.add(demo)
+
+    db.commit()
+
+    db.refresh(demo)
+
+    return demo
+
+def get_demos(db):
+
+    return db.query(
+        Demo
+    ).all()
+
+def get_demo(
+    db,
+    demo_id
+):
+
+    return db.query(
+        Demo
+    ).filter(
+        Demo.id == demo_id
+    ).first()
+
+def update_demo(
+    db,
+    demo_id,
+    data
+):
+
+    demo = db.query(
+        Demo
+    ).filter(
+        Demo.id == demo_id
+    ).first()
+
+    if not demo:
+        return None
+
+    update_data = data.model_dump(
+        exclude_unset=True
+    )
+
+    if (
+        "client_id" in update_data
+    ):
+
+        client = db.query(
+            Client
+        ).filter(
+            Client.id == update_data["client_id"]
+        ).first()
+
+        if not client:
+
+            raise HTTPException(
+                status_code=404,
+                detail="Client not found"
+            )
+
+    if (
+        "assigned_employee_id" in update_data
+    ):
+
+        employee = db.query(
+            User
+        ).filter(
+            User.id == update_data["assigned_employee_id"]
+        ).first()
+
+        if not employee:
+
+            raise HTTPException(
+                status_code=404,
+                detail="Employee not found"
+            )
+
+    for key, value in update_data.items():
+
+        setattr(
+            demo,
+            key,
+            value
+        )
+
+    if demo.installation_date:
+
+        demo.trial_expiry_date = (
+            demo.installation_date
+            + timedelta(days=demo.trial_days)
+        )
+
+    db.commit()
+
+    db.refresh(demo)
+
+    return demo
+
+def delete_demo(
+    db,
+    demo_id
+):
+
+    demo = db.query(
+        Demo
+    ).filter(
+        Demo.id == demo_id
+    ).first()
+
+    if not demo:
+        return None
+
+    db.delete(demo)
+
+    db.commit()
+
+    return demo
+
+def search_demos(
+    db,
+    q
+):
+
+    return db.query(
+        Demo
+    ).join(
+        Client
+    ).filter(
+        Client.pharmacy_name.ilike(
+            f"%{q}%"
+        )
+    ).all()
+
+
+def check_expired_trials(db):
+
+    demos = db.query(
+        Demo
+    ).filter(
+        Demo.trial_status == "active"
+    ).all()
+
+    today = date.today()
+
+    for demo in demos:
+
+        if (
+            demo.trial_expiry_date
+            and demo.trial_expiry_date < today
+        ):
+
+            demo.trial_status = "expired"
+
+    db.commit()
