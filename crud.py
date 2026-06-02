@@ -2,7 +2,7 @@ from http import client
 
 from sqlalchemy.orm import Session
 
-from models import User, City, Area,Client,ExistingProduct,CallLog,Demo
+from models import User, City, Area,Client,ExistingProduct,CallLog,Demo,Deal
 
 from schemas import UserCreate
 
@@ -11,6 +11,7 @@ from fastapi import HTTPException
 from datetime import timedelta
 from datetime import date
 from urllib.parse import quote
+from sqlalchemy import or_
 
 
 def get_user_by_email(
@@ -679,3 +680,306 @@ def check_expired_trials(db):
             demo.trial_status = "expired"
 
     db.commit()
+
+def create_deal(
+    db,
+    data
+):
+
+    client = db.query(
+        Client
+    ).filter(
+        Client.id == data.client_id
+    ).first()
+
+    if not client:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Client not found"
+        )
+
+    user = db.query(
+        User
+    ).filter(
+        User.id == data.deal_owner_id
+    ).first()
+
+    if not user:
+
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    deal = Deal(
+        **data.model_dump(),
+        renewal_reminder_date=data.end_date,
+        renewal_status="active"
+    )
+
+    db.add(deal)
+
+    db.commit()
+
+    db.refresh(deal)
+
+    return deal
+
+def get_deals(db):
+
+    return db.query(
+        Deal
+    ).all()
+
+def get_deal(
+    db,
+    deal_id
+):
+
+    return db.query(
+        Deal
+    ).filter(
+        Deal.id == deal_id
+    ).first()
+
+def update_deal(
+    db,
+    deal_id,
+    data
+):
+
+    deal = db.query(
+        Deal
+    ).filter(
+        Deal.id == deal_id
+    ).first()
+
+    if not deal:
+
+        return None
+
+    update_data = data.model_dump(
+        exclude_unset=True
+    )
+
+    if "client_id" in update_data:
+
+        client = db.query(
+            Client
+        ).filter(
+            Client.id == update_data["client_id"]
+        ).first()
+
+        if not client:
+
+            raise HTTPException(
+                status_code=404,
+                detail="Client not found"
+            )
+
+    if "deal_owner_id" in update_data:
+
+        user = db.query(
+            User
+        ).filter(
+            User.id == update_data["deal_owner_id"]
+        ).first()
+
+        if not user:
+
+            raise HTTPException(
+                status_code=404,
+                detail="User not found"
+            )
+
+    if "end_date" in update_data:
+
+        deal.renewal_reminder_date = update_data["end_date"]
+
+    for key, value in update_data.items():
+
+        setattr(
+            deal,
+            key,
+            value
+        )
+
+    db.commit()
+
+    db.refresh(deal)
+
+    return deal
+
+def delete_deal(
+    db,
+    deal_id
+):
+
+    deal = db.query(
+        Deal
+    ).filter(
+        Deal.id == deal_id
+    ).first()
+
+    if not deal:
+
+        return False
+
+    db.delete(deal)
+
+    db.commit()
+
+    return True
+
+def search_deals(
+    db,
+    q
+):
+
+    return db.query(
+        Deal
+    ).join(
+        Client
+    ).filter(
+        or_(
+            Deal.deal_name.ilike(f"%{q}%"),
+            Deal.software_type.ilike(f"%{q}%"),
+            Client.pharmacy_name.ilike(f"%{q}%")
+        )
+    ).all()
+
+def get_reminders(db):
+
+    reminders = []
+
+    today = date.today()
+
+    next_7_days = today + timedelta(days=7)
+
+    next_15_days = today + timedelta(days=15)
+
+    next_30_days = today + timedelta(days=30)
+
+    # ------------------------
+    # AUTO INACTIVE DEALS
+    # ------------------------
+
+    expired_deals = db.query(
+        Deal
+    ).filter(
+        Deal.renewal_status == "active",
+        Deal.renewal_reminder_date < today
+    ).all()
+
+    for deal in expired_deals:
+
+        deal.renewal_status = "inactive"
+
+    db.commit()
+
+    # ------------------------
+    # CALL LOG REMINDERS
+    # ------------------------
+
+    call_logs = db.query(
+        CallLog
+    ).join(
+        Client
+    ).filter(
+        CallLog.follow_up_date != None,
+        CallLog.follow_up_date <= next_7_days
+    ).all()
+
+    for log in call_logs:
+
+        if log.follow_up_date < today:
+
+            status = "Overdue"
+
+        elif log.follow_up_date == today:
+
+            status = "Today"
+
+        else:
+
+            status = "Upcoming"
+
+        reminders.append({
+
+            "reminder_type": "Follow Up",
+
+            "client_id": log.client_id,
+
+            "client_name": log.client.pharmacy_name,
+
+            "reminder_date": log.follow_up_date,
+
+            "status": status
+        })
+
+    # ------------------------
+    # DEMO REMINDERS
+    # ------------------------
+
+    demos = db.query(
+        Demo
+    ).join(
+        Client
+    ).filter(
+        Demo.trial_status == "active",
+        Demo.trial_expiry_date != None,
+        Demo.trial_expiry_date >= today,
+        Demo.trial_expiry_date <= next_15_days
+    ).all()
+
+    for demo in demos:
+
+        reminders.append({
+
+            "reminder_type": "Trial Expiry",
+
+            "client_id": demo.client_id,
+
+            "client_name": demo.client.pharmacy_name,
+
+            "reminder_date": demo.trial_expiry_date,
+
+            "status": "Active"
+        })
+
+    # ------------------------
+    # DEAL REMINDERS
+    # ------------------------
+
+    deals = db.query(
+        Deal
+    ).join(
+        Client
+    ).filter(
+        Deal.renewal_status == "active",
+        Deal.renewal_reminder_date != None,
+        Deal.renewal_reminder_date >= today,
+        Deal.renewal_reminder_date <= next_30_days
+    ).all()
+
+    for deal in deals:
+
+        reminders.append({
+
+            "reminder_type": "Renewal",
+
+            "client_id": deal.client_id,
+
+            "client_name": deal.client.pharmacy_name,
+
+            "reminder_date": deal.renewal_reminder_date,
+
+            "status": "Active"
+        })
+
+    reminders.sort(
+        key=lambda x: x["reminder_date"]
+    )
+
+    return reminders

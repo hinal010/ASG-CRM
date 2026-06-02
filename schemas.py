@@ -260,3 +260,89 @@ class DemoResponse(BaseModel):
     class Config:
 
         from_attributes = True
+
+class DealCreate(BaseModel):
+
+    client_id: int
+
+    deal_owner_id: int
+
+    deal_name: str
+
+    software_type: str
+
+    amount: float
+
+    number_of_devices: int
+
+    start_date: date
+
+    end_date: date
+
+    notes: str | None = None
+
+class DealUpdate(BaseModel):
+
+    client_id: int | None = None
+
+    deal_owner_id: int | None = None
+
+    deal_name: str | None = None
+
+    software_type: str | None = None
+
+    amount: float | None = None
+
+    number_of_devices: int | None = None
+
+    start_date: date | None = None
+
+    end_date: date | None = None
+
+    notes: str | None = None
+
+class DealResponse(BaseModel):
+
+    id: int
+
+    client_id: int
+
+    deal_owner_id: int
+
+    deal_name: str
+
+    software_type: str
+
+    amount: float
+
+    number_of_devices: int
+
+    start_date: date
+
+    end_date: date
+
+    renewal_reminder_date: date | None
+
+    renewal_status: str
+
+    notes: str | None
+
+    created_date: date
+
+    created_time: time
+
+    class Config:
+
+        from_attributes = True
+
+class ReminderResponse(BaseModel):
+
+    reminder_type: str
+
+    client_id: int
+
+    client_name: str
+
+    reminder_date: date
+
+    status: str

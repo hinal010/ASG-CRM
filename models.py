@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Date,Time
+from sqlalchemy import Column, Integer, String, ForeignKey, Date,Time,Float
 from sqlalchemy.orm import relationship
 from database import Base
 from sqlalchemy import UniqueConstraint
@@ -175,6 +175,10 @@ class Client(Base):
     "Demo",
     back_populates="client"
 )
+    deals = relationship(
+    "Deal",
+    back_populates="client"
+)
 
 
 class ExistingProduct(Base):
@@ -324,3 +328,64 @@ class Demo(Base):
     "User",
     back_populates="demos"
 )
+    
+
+class Deal(Base):
+
+    __tablename__ = "deals"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+
+    client_id = Column(
+        Integer,
+        ForeignKey("clients.id")
+    )
+
+    deal_owner_id = Column(
+        Integer,
+        ForeignKey("users.id")
+    )
+
+    deal_name = Column(String)
+
+    software_type = Column(String)
+
+    amount = Column(Float)
+
+    number_of_devices = Column(Integer)
+
+    start_date = Column(Date)
+
+    end_date = Column(Date)
+
+    renewal_reminder_date = Column(Date)
+
+    renewal_status = Column(
+        String,
+        default="active"
+    )
+
+    notes = Column(String)
+
+    created_date = Column(
+        Date,
+        default=lambda: datetime.now().date()
+    )
+
+    created_time = Column(
+        Time,
+        default=lambda: datetime.now().time()
+    )
+
+    client = relationship(
+        "Client",
+        back_populates="deals"
+    )
+
+    deal_owner = relationship(
+        "User"
+    )

@@ -672,3 +672,130 @@ def delete_demo(
     return {
         "message": "Demo deleted successfully"
     }
+
+@app.post(
+    "/deals",
+    response_model=schemas.DealResponse
+)
+def create_deal(
+    data: schemas.DealCreate,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+
+    return crud.create_deal(
+        db,
+        data
+    )
+
+@app.get(
+    "/deals",
+    response_model=list[schemas.DealResponse]
+)
+def get_deals(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+
+    return crud.get_deals(db)
+
+@app.get(
+    "/deals/search",
+    response_model=list[schemas.DealResponse]
+)
+def search_deals(
+    q: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+
+    return crud.search_deals(
+        db,
+        q
+    )
+
+@app.get(
+    "/deals/{deal_id}",
+    response_model=schemas.DealResponse
+)
+def get_deal(
+    deal_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+
+    deal = crud.get_deal(
+        db,
+        deal_id
+    )
+
+    if not deal:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Deal not found"
+        )
+
+    return deal
+
+@app.put(
+    "/deals/{deal_id}",
+    response_model=schemas.DealResponse
+)
+def update_deal(
+    deal_id: int,
+    data: schemas.DealUpdate,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+
+    deal = crud.update_deal(
+        db,
+        deal_id,
+        data
+    )
+
+    if not deal:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Deal not found"
+        )
+
+    return deal
+
+@app.delete("/deals/{deal_id}")
+def delete_deal(
+    deal_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+
+    success = crud.delete_deal(
+        db,
+        deal_id
+    )
+
+    if not success:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Deal not found"
+        )
+
+    return {
+        "message": "Deal deleted successfully"
+    }
+
+@app.get(
+    "/reminders",
+    response_model=list[
+        schemas.ReminderResponse
+    ]
+)
+def get_reminders(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+
+    return crud.get_reminders(db)
