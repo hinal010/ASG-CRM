@@ -506,12 +506,16 @@ def create_demo(
             + timedelta(days=data.trial_days)
         )
 
+    demo_data = data.model_dump()
+
+    demo_data["demo_location"] = map_url
+
     demo = Demo(
-    **data.model_dump(),
-    demo_location=map_url,
-    trial_expiry_date=trial_expiry_date,
-    trial_status="active"
+        **demo_data,
+        trial_expiry_date=trial_expiry_date,
+        trial_status="active"
     )
+        
 
     db.add(demo)
 
