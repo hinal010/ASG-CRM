@@ -368,7 +368,11 @@ def update_call_log(
 
     if not call_log:
         return None
-    
+
+    update_data = data.model_dump(
+        exclude_unset=True
+    )
+
     if "client_id" in update_data:
 
         client = db.query(
@@ -383,10 +387,11 @@ def update_call_log(
                 status_code=404,
                 detail="Client not found"
             )
-        
-    if ("existing_product_id" in update_data 
+
+    if (
+        "existing_product_id" in update_data
         and update_data["existing_product_id"] is not None
-):
+    ):
 
         product = db.query(
             ExistingProduct
@@ -400,10 +405,6 @@ def update_call_log(
                 status_code=404,
                 detail="Existing Product not found"
             )
-
-    update_data = data.model_dump(
-        exclude_unset=True
-    )
 
     for key, value in update_data.items():
 
