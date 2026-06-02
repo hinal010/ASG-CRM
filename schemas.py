@@ -253,9 +253,9 @@ class DemoResponse(BaseModel):
 
     trial_status: str
 
-    created_date: date
+    # created_date: date
 
-    created_time: time
+    # created_time: time
 
     class Config:
 
