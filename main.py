@@ -14,7 +14,7 @@ from database import Base
 from database import engine
 from database import get_db
 
-from jwt_token import create_access_token,admin_required,get_current_user
+from jwt_token import create_access_token,admin_required,get_current_user,role_required
 
 Base.metadata.create_all(bind=engine)
 
@@ -207,7 +207,11 @@ def get_areas(
 def create_client(
     client: schemas.ClientCreate,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user=Depends(
+    role_required(
+        ["admin", "marketing"]
+    )
+)
 ):
 
     return crud.create_client(
@@ -222,7 +226,9 @@ def create_client(
 )
 def get_clients(
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user=Depends(
+    role_required(["admin", "marketing", "sales"])
+)
 ):
 
     return crud.get_clients(db)
@@ -235,7 +241,11 @@ def update_client(
     client_id: int,
     data: schemas.ClientUpdate,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user=Depends(
+    role_required(
+        ["admin", "marketing"]
+    )
+)
 ):
 
     client = crud.update_client(
@@ -259,7 +269,11 @@ def update_client(
 def delete_client(
     client_id: int,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user=Depends(
+    role_required(
+        ["admin", "marketing"]
+    )
+)
 ):
 
     deleted = crud.delete_client(
@@ -284,7 +298,9 @@ def delete_client(
 def search_clients(
     q: str,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user=Depends(
+    role_required(["admin", "marketing", "sales"])
+)
 ):
 
     return crud.search_clients(
@@ -299,7 +315,9 @@ def search_clients(
 def get_client(
     client_id: int,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user=Depends(
+    role_required(["admin", "marketing", "sales"])
+)
 ):
 
     client = crud.get_client(
@@ -323,7 +341,11 @@ def get_client(
 def create_existing_product(
     data: schemas.ExistingProductCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(
+    role_required(
+        ["admin"]
+    )
+)
 ):
 
     return crud.create_existing_product(
@@ -337,7 +359,11 @@ def create_existing_product(
 )
 def get_existing_products(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(
+    role_required(
+        ["admin", "marketing", "sales"]
+    )
+)
 ):
 
     return crud.get_existing_products(
@@ -351,7 +377,11 @@ def get_existing_products(
 def search_existing_products(
     q: str,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(
+    role_required(
+        ["admin", "marketing", "sales"]
+    )
+)
 ):
 
     return crud.search_existing_products(
@@ -366,7 +396,11 @@ def search_existing_products(
 def get_existing_product(
     product_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(
+    role_required(
+        ["admin", "marketing", "sales"]
+    )
+)
 ):
 
     product = crud.get_existing_product(
@@ -391,7 +425,11 @@ def update_existing_product(
     product_id: int,
     data: schemas.ExistingProductUpdate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(
+    role_required(
+        ["admin"]
+    )
+)
 ):
 
     product = crud.update_existing_product(
@@ -415,7 +453,11 @@ def update_existing_product(
 def delete_existing_product(
     product_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(
+    role_required(
+        ["admin"]
+    )
+)
 ):
 
     product = crud.delete_existing_product(
@@ -441,7 +483,11 @@ def delete_existing_product(
 def create_call_log(
     data: schemas.CallLogCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(
+    role_required(
+        ["admin", "marketing"]
+    )
+)
 ):
 
     return crud.create_call_log(
@@ -456,7 +502,11 @@ def create_call_log(
 def search_call_logs(
     q: str,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(
+    role_required(
+        ["admin", "marketing"]
+    )
+)
 ):
 
     return crud.search_call_logs(
@@ -471,7 +521,11 @@ def search_call_logs(
 def get_call_log(
     call_log_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(
+    role_required(
+        ["admin", "marketing"]
+    )
+)
 ):
 
     call_log = crud.get_call_log(
@@ -496,7 +550,11 @@ def update_call_log(
     call_log_id: int,
     data: schemas.CallLogUpdate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(
+    role_required(
+        ["admin", "marketing"]
+    )
+)
 ):
 
     call_log = crud.update_call_log(
@@ -520,7 +578,11 @@ def update_call_log(
 def delete_call_log(
     call_log_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(
+    role_required(
+        ["admin", "marketing"]
+    )
+)
 ):
 
     call_log = crud.delete_call_log(
@@ -546,9 +608,11 @@ def delete_call_log(
 def create_demo(
     data: schemas.DemoCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(
-        get_current_user
+    current_user=Depends(
+    role_required(
+        ["admin", "sales"]
     )
+)
 ):
 
     return crud.create_demo(
@@ -564,9 +628,11 @@ def create_demo(
 )
 def get_demos(
     db: Session = Depends(get_db),
-    current_user: User = Depends(
-        get_current_user
+    current_user=Depends(
+    role_required(
+        ["admin", "sales"]
     )
+)
 ):
 
     crud.check_expired_trials(db)
@@ -582,9 +648,11 @@ def get_demos(
 def search_demos(
     q: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(
-        get_current_user
+    current_user=Depends(
+    role_required(
+        ["admin", "sales"]
     )
+)
 ):
 
     return crud.search_demos(
@@ -599,9 +667,11 @@ def search_demos(
 def get_demo(
     demo_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(
-        get_current_user
+    current_user=Depends(
+    role_required(
+        ["admin", "sales"]
     )
+)
 ):
 
     demo = crud.get_demo(
@@ -626,9 +696,11 @@ def update_demo(
     demo_id: int,
     data: schemas.DemoUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(
-        get_current_user
+    current_user=Depends(
+    role_required(
+        ["admin", "sales"]
     )
+)
 ):
 
     demo = crud.update_demo(
@@ -652,9 +724,11 @@ def update_demo(
 def delete_demo(
     demo_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(
-        get_current_user
+    current_user=Depends(
+    role_required(
+        ["admin", "sales"]
     )
+)
 ):
 
     demo = crud.delete_demo(
@@ -680,7 +754,11 @@ def delete_demo(
 def create_deal(
     data: schemas.DealCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(
+    role_required(
+        ["admin", "sales"]
+    )
+)
 ):
 
     return crud.create_deal(
@@ -694,7 +772,11 @@ def create_deal(
 )
 def get_deals(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(
+    role_required(
+        ["admin", "sales"]
+    )
+)
 ):
 
     return crud.get_deals(db)
@@ -706,7 +788,11 @@ def get_deals(
 def search_deals(
     q: str,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(
+    role_required(
+        ["admin", "sales"]
+    )
+)
 ):
 
     return crud.search_deals(
@@ -721,7 +807,11 @@ def search_deals(
 def get_deal(
     deal_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(
+    role_required(
+        ["admin", "sales"]
+    )
+)
 ):
 
     deal = crud.get_deal(
@@ -746,7 +836,11 @@ def update_deal(
     deal_id: int,
     data: schemas.DealUpdate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(
+    role_required(
+        ["admin", "sales"]
+    )
+)
 ):
 
     deal = crud.update_deal(
@@ -768,7 +862,11 @@ def update_deal(
 def delete_deal(
     deal_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(
+    role_required(
+        ["admin", "sales"]
+    )
+)
 ):
 
     success = crud.delete_deal(
@@ -795,7 +893,11 @@ def delete_deal(
 )
 def get_reminders(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(
+    role_required(
+        ["admin", "marketing", "sales"]
+    )
+)
 ):
 
     return crud.get_reminders(db)

@@ -150,3 +150,18 @@ def admin_required(
         )
 
     return current_user
+
+def role_required(allowed_roles: list[str]):
+
+    def checker(current_user=Depends(get_current_user)):
+
+        if current_user.role not in allowed_roles:
+
+            raise HTTPException(
+                status_code=403,
+                detail="Permission denied"
+            )
+
+        return current_user
+
+    return checker
