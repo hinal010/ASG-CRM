@@ -542,6 +542,39 @@ def get_call_log(
 
     return call_log
 
+@app.get(
+    "/clients/{client_id}/call-logs",
+    response_model=list[
+        schemas.CallLogResponse
+    ]
+)
+def get_call_logs_by_client(
+    client_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(
+        role_required(
+            ["admin", "marketing", "sales"]
+        )
+    )
+):
+
+    client = crud.get_client(
+        db,
+        client_id
+    )
+
+    if not client:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Client not found"
+        )
+
+    return crud.get_call_logs_by_client(
+        db,
+        client_id
+    )
+
 @app.put(
     "/call-logs/{call_log_id}",
     response_model=schemas.CallLogResponse
@@ -610,7 +643,7 @@ def create_demo(
     db: Session = Depends(get_db),
     current_user=Depends(
     role_required(
-        ["admin", "sales"]
+        ["admin","marketing", "sales"]
     )
 )
 ):
@@ -630,7 +663,7 @@ def get_demos(
     db: Session = Depends(get_db),
     current_user=Depends(
     role_required(
-        ["admin", "sales"]
+        ["admin", "marketing","sales"]
     )
 )
 ):
@@ -650,7 +683,7 @@ def search_demos(
     db: Session = Depends(get_db),
     current_user=Depends(
     role_required(
-        ["admin", "sales"]
+        ["admin","marketing", "sales"]
     )
 )
 ):
@@ -669,7 +702,7 @@ def get_demo(
     db: Session = Depends(get_db),
     current_user=Depends(
     role_required(
-        ["admin", "sales"]
+        ["admin","marketing", "sales"]
     )
 )
 ):
@@ -698,7 +731,7 @@ def update_demo(
     db: Session = Depends(get_db),
     current_user=Depends(
     role_required(
-        ["admin", "sales"]
+        ["admin", "marketing","sales"]
     )
 )
 ):
@@ -726,7 +759,7 @@ def delete_demo(
     db: Session = Depends(get_db),
     current_user=Depends(
     role_required(
-        ["admin", "sales"]
+        ["admin", "marketing","sales"]
     )
 )
 ):

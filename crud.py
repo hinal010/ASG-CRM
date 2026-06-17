@@ -849,7 +849,10 @@ def search_deals(
         )
     ).all()
 
-def get_reminders(db):
+def get_reminders(
+    db,
+    current_user
+):
 
     reminders = []
 
@@ -861,14 +864,11 @@ def get_reminders(db):
 
     next_30_days = today + timedelta(days=30)
 
-    # ------------------------
-    # AUTO INACTIVE DEALS
-    # ------------------------
-
     expired_deals = db.query(
         Deal
     ).filter(
         Deal.renewal_status == "active",
+        Deal.renewal_reminder_date != None,
         Deal.renewal_reminder_date < today
     ).all()
 
@@ -878,108 +878,131 @@ def get_reminders(db):
 
     db.commit()
 
-    # ------------------------
-    # CALL LOG REMINDERS
-    # ------------------------
+    if current_user.role in [
+        "admin",
+        "marketing"
+    ]:
 
-    call_logs = db.query(
-        CallLog
-    ).join(
-        Client
-    ).filter(
-        CallLog.follow_up_date != None,
-        CallLog.follow_up_date <= next_7_days
-    ).all()
+        call_logs = db.query(
+            CallLog
+        ).join(
+            Client
+        ).filter(
+            CallLog.follow_up_date != None,
+            CallLog.follow_up_date <= next_7_days,
+            CallLog.lead_status.in_([
+                "interested",
+                "call_later",
+                "no_response"
+            ])
+        ).all()
 
-    for log in call_logs:
+        for log in call_logs:
 
-        if log.follow_up_date < today:
+            if log.follow_up_date < today:
 
-            status = "Overdue"
+                status = "Overdue"
 
-        elif log.follow_up_date == today:
+            elif log.follow_up_date == today:
 
-            status = "Today"
+                status = "Today"
 
-        else:
+            else:
 
-            status = "Upcoming"
+                status = "Upcoming"
 
-        reminders.append({
+            reminders.append({
+                "reminder_type": "Follow Up",
+                "client_id": log.client_id,
+                "client_name": log.client.pharmacy_name,
+                "reminder_date": log.follow_up_date,
+                "status": status
+            })
 
-            "reminder_type": "Follow Up",
+    if current_user.role in [
+        "admin",
+        "sales"
+    ]:
 
-            "client_id": log.client_id,
+        scheduled_demos = db.query(
+            Demo
+        ).join(
+            Client
+        ).filter(
+            Demo.demo_status == "scheduled",
+            Demo.demo_date != None,
+            Demo.demo_date >= today,
+            Demo.demo_date <= next_7_days
+        ).all()
 
-            "client_name": log.client.pharmacy_name,
+        for demo in scheduled_demos:
 
-            "reminder_date": log.follow_up_date,
+            reminders.append({
+                "reminder_type": "Demo Scheduled",
+                "client_id": demo.client_id,
+                "client_name": demo.client.pharmacy_name,
+                "reminder_date": demo.demo_date,
+                "status": "Scheduled"
+            })
 
-            "status": status
-        })
+        trial_demos = db.query(
+            Demo
+        ).join(
+            Client
+        ).filter(
+            Demo.trial_status == "active",
+            Demo.trial_expiry_date != None,
+            Demo.trial_expiry_date >= today,
+            Demo.trial_expiry_date <= next_15_days
+        ).all()
 
-    # ------------------------
-    # DEMO REMINDERS
-    # ------------------------
+        for demo in trial_demos:
 
-    demos = db.query(
-        Demo
-    ).join(
-        Client
-    ).filter(
-        Demo.trial_status == "active",
-        Demo.trial_expiry_date != None,
-        Demo.trial_expiry_date >= today,
-        Demo.trial_expiry_date <= next_15_days
-    ).all()
+            reminders.append({
+                "reminder_type": "Trial Expiry",
+                "client_id": demo.client_id,
+                "client_name": demo.client.pharmacy_name,
+                "reminder_date": demo.trial_expiry_date,
+                "status": "Active"
+            })
 
-    for demo in demos:
+        deals = db.query(
+            Deal
+        ).join(
+            Client
+        ).filter(
+            Deal.renewal_status == "active",
+            Deal.renewal_reminder_date != None,
+            Deal.renewal_reminder_date >= today,
+            Deal.renewal_reminder_date <= next_30_days
+        ).all()
 
-        reminders.append({
+        for deal in deals:
 
-            "reminder_type": "Trial Expiry",
-
-            "client_id": demo.client_id,
-
-            "client_name": demo.client.pharmacy_name,
-
-            "reminder_date": demo.trial_expiry_date,
-
-            "status": "Active"
-        })
-
-    # ------------------------
-    # DEAL REMINDERS
-    # ------------------------
-
-    deals = db.query(
-        Deal
-    ).join(
-        Client
-    ).filter(
-        Deal.renewal_status == "active",
-        Deal.renewal_reminder_date != None,
-        Deal.renewal_reminder_date >= today,
-        Deal.renewal_reminder_date <= next_30_days
-    ).all()
-
-    for deal in deals:
-
-        reminders.append({
-
-            "reminder_type": "Renewal",
-
-            "client_id": deal.client_id,
-
-            "client_name": deal.client.pharmacy_name,
-
-            "reminder_date": deal.renewal_reminder_date,
-
-            "status": "Active"
-        })
+            reminders.append({
+                "reminder_type": "Renewal",
+                "client_id": deal.client_id,
+                "client_name": deal.client.pharmacy_name,
+                "reminder_date": deal.renewal_reminder_date,
+                "status": "Active"
+            })
 
     reminders.sort(
         key=lambda x: x["reminder_date"]
     )
 
     return reminders
+
+def get_call_logs_by_client(
+    db,
+    client_id
+):
+
+    return db.query(
+        CallLog
+    ).filter(
+        CallLog.client_id == client_id
+    ).order_by(
+        CallLog.created_date,
+        CallLog.created_time
+    ).all()
