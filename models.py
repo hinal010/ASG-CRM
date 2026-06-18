@@ -3,6 +3,18 @@ from sqlalchemy.orm import relationship
 from database import Base
 from sqlalchemy import UniqueConstraint
 from datetime import datetime
+from zoneinfo import ZoneInfo
+
+def india_date():
+    return datetime.now(
+        ZoneInfo("Asia/Kolkata")
+    ).date()
+
+
+def india_time():
+    return datetime.now(
+        ZoneInfo("Asia/Kolkata")
+    ).time()
 
 
 class User(Base):
@@ -227,14 +239,23 @@ class CallLog(Base):
 
     follow_up_date = Column(Date)
 
+    # created_date = Column(
+    #     Date,
+    #     default=lambda: datetime.now().date()
+    # )
+
+    # created_time = Column(
+    #     Time,
+    #     default=lambda: datetime.now().time()
+    # )
     created_date = Column(
-        Date,
-        default=lambda: datetime.now().date()
+    Date,
+    default=india_date
     )
 
     created_time = Column(
         Time,
-        default=lambda: datetime.now().time()
+        default=india_time
     )
 
     existing_product = relationship(
@@ -371,14 +392,23 @@ class Deal(Base):
 
     notes = Column(String)
 
+    # created_date = Column(
+    #     Date,
+    #     default=lambda: datetime.now().date()
+    # )
+
+    # created_time = Column(
+    #     Time,
+    #     default=lambda: datetime.now().time()
+    # )
     created_date = Column(
-        Date,
-        default=lambda: datetime.now().date()
+    Date,
+    default=india_date
     )
 
     created_time = Column(
         Time,
-        default=lambda: datetime.now().time()
+        default=india_time
     )
 
     client = relationship(
