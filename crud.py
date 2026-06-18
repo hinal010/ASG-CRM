@@ -360,6 +360,17 @@ def get_call_log(
         CallLog.id == call_log_id
     ).first()
 
+def get_call_logs(
+    db
+):
+
+    return db.query(
+        CallLog
+    ).order_by(
+        CallLog.created_date.desc(),
+        CallLog.created_time.desc()
+    ).all()
+
 def update_call_log(
     db,
     call_log_id,

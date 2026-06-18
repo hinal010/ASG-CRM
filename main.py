@@ -543,6 +543,22 @@ def get_call_log(
     return call_log
 
 @app.get(
+    "/call-logs",
+    response_model=list[
+        schemas.CallLogResponse
+    ]
+)
+def get_call_logs(
+    db: Session = Depends(get_db),
+    current_user=Depends(
+        role_required(
+            ["admin", "marketing"]
+        )
+    )
+):
+
+    return crud.get_call_logs(db)
+@app.get(
     "/clients/{client_id}/call-logs",
     response_model=list[
         schemas.CallLogResponse
@@ -553,7 +569,7 @@ def get_call_logs_by_client(
     db: Session = Depends(get_db),
     current_user=Depends(
         role_required(
-            ["admin", "marketing", "sales"]
+            ["admin", "marketing"]
         )
     )
 ):
