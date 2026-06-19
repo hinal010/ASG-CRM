@@ -419,3 +419,44 @@ class Deal(Base):
     deal_owner = relationship(
         "User"
     )
+
+class CallLogHistory(Base):
+
+    __tablename__ = "call_log_histories"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+
+    client_id = Column(
+        Integer,
+        ForeignKey("clients.id")
+    )
+
+    call_log_id = Column(
+        Integer,
+        ForeignKey("call_logs.id")
+    )
+
+    existing_product_id = Column(
+        Integer,
+        nullable=True
+    )
+
+    lead_status = Column(String)
+
+    remarks = Column(String)
+
+    follow_up_date = Column(Date)
+
+    updated_date = Column(
+    Date,
+    default=india_date
+)
+
+    updated_time = Column(
+        Time,
+        default=india_time
+)

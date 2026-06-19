@@ -558,38 +558,6 @@ def get_call_logs(
 ):
 
     return crud.get_call_logs(db)
-@app.get(
-    "/clients/{client_id}/call-logs",
-    response_model=list[
-        schemas.CallLogResponse
-    ]
-)
-def get_call_logs_by_client(
-    client_id: int,
-    db: Session = Depends(get_db),
-    current_user=Depends(
-        role_required(
-            ["admin", "marketing"]
-        )
-    )
-):
-
-    client = crud.get_client(
-        db,
-        client_id
-    )
-
-    if not client:
-
-        raise HTTPException(
-            status_code=404,
-            detail="Client not found"
-        )
-
-    return crud.get_call_logs_by_client(
-        db,
-        client_id
-    )
 
 @app.put(
     "/call-logs/{call_log_id}",
@@ -620,6 +588,39 @@ def update_call_log(
         )
 
     return call_log
+
+@app.get(
+    "/clients/{client_id}/call-log-history",
+    response_model=list[
+        schemas.CallLogHistoryResponse
+    ]
+)
+def get_call_log_history_by_client(
+    client_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(
+        role_required(
+            ["admin", "marketing"]
+        )
+    )
+):
+
+    client = crud.get_client(
+        db,
+        client_id
+    )
+
+    if not client:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Client not found"
+        )
+
+    return crud.get_call_log_history_by_client(
+        db,
+        client_id
+    )
 
 @app.delete(
     "/call-logs/{call_log_id}"

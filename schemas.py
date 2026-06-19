@@ -346,3 +346,18 @@ class ReminderResponse(BaseModel):
     reminder_date: date
 
     status: str
+
+class CallLogHistoryResponse(BaseModel):
+
+    id: int
+    client_id: int
+    call_log_id: int
+    existing_product_id: int | None
+    lead_status: str
+    remarks: str | None
+    follow_up_date: date | None
+    updated_date: date
+    updated_time: time
+
+    class Config:
+        from_attributes = True

@@ -2,7 +2,7 @@ from http import client
 
 from sqlalchemy.orm import Session
 
-from models import User, City, Area,Client,ExistingProduct,CallLog,Demo,Deal
+from models import User, City, Area,Client,ExistingProduct,CallLog,Demo,Deal ,CallLogHistory
 
 from schemas import UserCreate
 
@@ -386,42 +386,20 @@ def update_call_log(
     if not call_log:
         return None
 
+    history = CallLogHistory(
+        client_id=call_log.client_id,
+        call_log_id=call_log.id,
+        existing_product_id=call_log.existing_product_id,
+        lead_status=call_log.lead_status,
+        remarks=call_log.remarks,
+        follow_up_date=call_log.follow_up_date
+    )
+
+    db.add(history)
+
     update_data = data.model_dump(
         exclude_unset=True
     )
-
-    if "client_id" in update_data:
-
-        client = db.query(
-            Client
-        ).filter(
-            Client.id == update_data["client_id"]
-        ).first()
-
-        if not client:
-
-            raise HTTPException(
-                status_code=404,
-                detail="Client not found"
-            )
-
-    if (
-        "existing_product_id" in update_data
-        and update_data["existing_product_id"] is not None
-    ):
-
-        product = db.query(
-            ExistingProduct
-        ).filter(
-            ExistingProduct.id == update_data["existing_product_id"]
-        ).first()
-
-        if not product:
-
-            raise HTTPException(
-                status_code=404,
-                detail="Existing Product not found"
-            )
 
     for key, value in update_data.items():
 
@@ -468,6 +446,20 @@ def search_call_logs(
     ).filter(
         (CallLog.lead_status.ilike(f"%{q}%")) |
         (CallLog.remarks.ilike(f"%{q}%"))
+    ).all()
+
+def get_call_log_history_by_client(
+    db,
+    client_id
+):
+
+    return db.query(
+        CallLogHistory
+    ).filter(
+        CallLogHistory.client_id == client_id
+    ).order_by(
+        CallLogHistory.updated_date,
+        CallLogHistory.updated_time
     ).all()
 
 def create_demo(
