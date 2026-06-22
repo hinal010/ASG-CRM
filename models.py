@@ -221,7 +221,8 @@ class CallLog(Base):
 
     client_id = Column(
         Integer,
-        ForeignKey("clients.id")
+        ForeignKey("clients.id"),
+        nullable=False
     )
 
     existing_product_id = Column(
